@@ -138,7 +138,25 @@ and "datas-as-case" is missing... till you write it.
 
 |#
 
-(defun send (obj mess &rest args) 
+(defun data-as-case(data)
+  `(,data (lambda nil ,data))
+)
+
+(defun datas-as-case (datas)
+  (mapcar #'data-as-case datas)
+)
+
+(defun method-as-case(method)
+  (let ((method_name (car method)) (body (cdr method)))
+    `(,method_name (lambda ,@body))
+  )
+)
+
+(defun methods-as-case (methods)
+  (mapcar #'method-as-case methods)
+)
+
+(defun send (obj mess &rest args)
   (apply (funcall obj mess) args))
 
 (defmacro defthing (klass &key has does)
@@ -154,6 +172,8 @@ and "datas-as-case" is missing... till you write it.
 1. Make defthing work
 
 TODO 1a. Why does mapcar call #'car over the "has"?
+  You only want to run the case statement over the field names in the list, not the default values.
+
 TODO 1b. Why is message set to a gensym?
   Message is set to gensym in order to avoid conflicts with variables passed in.
 TODO 1c. Implement "data-as-case": 
@@ -177,7 +197,7 @@ expand nicely:
 |#
 
 ; but first, uncomment this code
-'(defthing
+(xpand '(defthing
   account
   :has  ((name) (balance 0) (interest-rate .05))
   :does ((withdraw (amt)
@@ -186,7 +206,7 @@ expand nicely:
                   (incf balance amt))
          (interest ()
                    (incf balance
-                         (* interest-rate balance)))))
+                         (* interest-rate balance))))))
 
 #|
 
