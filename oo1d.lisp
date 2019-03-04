@@ -171,9 +171,26 @@ expand nicely:
                          (* interest-rate balance)))))
 #|
 TODO 1e. Show the result of expanding you account.
+
+#<function :lambda (#:message3211)
+  (case #:message3211
+   (withdraw
+    (lambda (amt) (decf balance amt)))
+   (deposit
+    (lambda (amt) (incf balance amt)))
+   (interest
+    (lambda nil
+     (incf balance
+      (* interest-rate balance))))
+   (name (lambda nil name))
+   (balance (lambda nil balance))
+   (interest-rate
+    (lambda nil interest-rate)))>
+NIL
+
 |#
 ; uncomment this to see what an account looks like
-(xpand (account))
+'(xpand (account))
 #|
 1f. Fix "withdraw" in "account" such that if you withdraw more than
 what is there, it  returns the symbol 'insufficient-funds
@@ -193,7 +210,7 @@ TODO 1f.. Show the output from the following function
                     ,(send acc 'withdraw 20))))
       ))
 ; to run encapuatlion, uncomment the following
-'(encapsulation)
+(encapsulation)
 #|
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; POLYMORPHISM
