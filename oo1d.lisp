@@ -273,6 +273,7 @@ structs.
 (defvar *meta* (make-hash-table))
 (defstruct about has does )
 #|
+
 Also, yu'll need to write a new definition of the "defthing" macro
 which we call "defklass". As a side-effect of creating the lambda,
 it also sends that object a pointer to itself (see "_self!") as
@@ -308,13 +309,35 @@ object
     trimmed-account
 |#
 ; implement defklass here
+
+; I threw together all the code given in the instructions
+; and added the gensym "MESSAGE" line so it could have a
+; message, but for the life of me I don't know what's
+; missing.
+
+(defmacro defklass (klass &key isa has does)
+  (let* ((message (gensym "MESSAGE")))
+  (let* ((b4          (and isa (gethash isa *meta*)))
+         (has-before  (and b4 (about-has b4)))
+         (does-before (and b4 (about-does b4))))
+  (setf (gethash klass *meta*)
+        (make-about :has has :does does))
+     `(defun ,klass (&key ,@has) 
+            (let ((self (lambda (,message)
+                           (case ,message
+                             ,@(methods-as-case does)
+                             ,@(datas-as-case (mapcar #'car has))))))
+              (send self '_self! self)
+              (send self '_isa! ',klass)
+              self)))))
+
 (let ((_counter 0))
   (defun counter () (incf _counter)))
 (defun meta? (x)
   (and (symbolp x) 
        (eql (char (symbol-name x) 0) #\_)))
 ; uncomment the following when defklass is implemented
-'(defklass 
+(defklass 
   object 
   :has ((_self)  (_isa) (id (counter)))
   :does (
@@ -328,7 +351,7 @@ object
                           (push `(,one . ,(send _self one)) 
                                 slot-values)))))))
 ; uncomment the following when defklass is implemented
-'(defklass
+(defklass
   account
   :isa object
   :has  ((name) (balance 0) (interest-rate .05))
@@ -342,7 +365,7 @@ object
 ; uncomment this to see what is going on
 '(xpand (account))
 ; uncomment the following when defklass is implemented
-'(defklass
+(defklass
   trimmed-account
   :isa account
   :does ((withdraw (amt)
@@ -360,11 +383,11 @@ object
         (print `(inheritance ,(send acc 'withdraw 20))))
       ))
 ; TODO: 3a show that the following works correctly
-'(inheritance)
+(inheritance)
 '(xpand (trimmed-account))
 ; TODO: 3b. show that the following prints out the slots of an object.
 (defun meta ()
    (let ((acc (trimmed-account)))
       (print `(meta ,(send acc 'show))
    )))
-'(meta)
+(meta)
