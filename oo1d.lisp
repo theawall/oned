@@ -246,7 +246,7 @@ TODO 2b. Define an object "rectangle" with variables x1,x2,y1,y2
   rectangle
   :has ((x1 0) (x2 0) (y1 0) (y2 0))
   :does ((area()
-             (* (- x1 x2) (- y1 y2)))))
+             (* (abs (- x1 x2)) (abs (- y1 y2))))))
 
 #|
 TODO 2c. Show the output from the following test
@@ -316,10 +316,12 @@ object
 ; missing.
 
 (defmacro defklass (klass &key isa has does)
-  (let* ((message (gensym "MESSAGE")))
-  (let* ((b4          (and isa (gethash isa *meta*)))
+  (let* ((message (gensym "MESSAGE")) 
+         (b4 (and isa (gethash isa *meta*)))
          (has-before  (and b4 (about-has b4)))
-         (does-before (and b4 (about-does b4))))
+         (does-before (and b4 (about-does b4)))
+         (has (append has has-before))
+         (does (append does does-before)))
   (setf (gethash klass *meta*)
         (make-about :has has :does does))
      `(defun ,klass (&key ,@has) 
@@ -329,7 +331,7 @@ object
                              ,@(datas-as-case (mapcar #'car has))))))
               (send self '_self! self)
               (send self '_isa! ',klass)
-              self)))))
+              self))))
 
 (let ((_counter 0))
   (defun counter () (incf _counter)))
